@@ -1,36 +1,36 @@
 #include <iostream>
 #include <vector>
 #include <thread>
-#include <atomic>
+#include <mutex>
 
 using namespace std;
 
-const int N = 10000000;
-const int numThreads = 10;
+int N = 1000000;
+int numThreads = 20;
 
-atomic<long long> totalSum(0);
+long long totalSum = 0;
+mutex mtx;
 
 void sumOfSquares(int start, int end)
 {
 
     long long localSum = 0;
-    for (int i = start; i < end; ++i)
+    for (int i = start; i <= end; ++i)
     {
-
         localSum += i * i;
     }
-    totalSum.fetch_add(localSum, memory_order_relaxed);
-    // totalSum += localSum;
+
+    lock_guard<mutex> lock(mtx);
+    totalSum += localSum;
 }
 
 int main()
 {
 
     vector<thread> threads;
-
     int rangeSize = N / numThreads;
 
-    // Launch threads to calculate partial sum
+    // launch threads to calculate partial sum
     for (int i = 0; i < numThreads; ++i)
     {
         int start = i * rangeSize + 1;
@@ -38,14 +38,12 @@ int main()
         threads.push_back(thread(sumOfSquares, start, end));
     }
 
-    // join threads
+    // To join threads
     for (auto &th : threads)
     {
         th.join();
     }
 
-    cout
-        << "Sum of squares: " << totalSum << endl;
-
+    cout << "Sum of squares: " << totalSum << endl;
     return 0;
 }
