@@ -27,7 +27,6 @@ int main()
 {
 
     vector<thread> threads;
-
     int rangeSize = N / numThreads;
 
     // Launch threads to calculate partial sum
